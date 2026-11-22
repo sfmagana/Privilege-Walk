@@ -197,6 +197,7 @@ function connectSupabase() {
   if (SUPABASE_URL.includes("PASTE_") || SUPABASE_PUBLISHABLE_KEY.includes("PASTE_")) {
     throw new Error("Add your Supabase Project URL and publishable key in the code first.");
   }
+
   if (!supabaseClient) {
     supabaseClient = window.supabase.createClient(
       SUPABASE_URL,
@@ -409,7 +410,7 @@ async function joinAsStudent() {
     participantId = sessionStorage.getItem("privwalk-id") || makeId();
     sessionStorage.setItem("privwalk-id", participantId);
 
-    channel = supabaseCLient.channel(topic(sessionCode), {
+    channel = supabaseClient.channel(topic(sessionCode), {
       config: { broadcast: { self: false } }
     });
 
