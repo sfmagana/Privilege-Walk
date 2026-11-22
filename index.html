@@ -184,7 +184,7 @@ const QUESTIONS = [
   ["If your parents told you that you can be anything you want to be.", 1]
 ];
 
-let supabase, channel, role, sessionCode, participantId, participantNumber;
+let supabaseClient, channel, role, sessionCode, participantId, participantNumber;
 let hostState = null;
 let studentState = null;
 
@@ -197,9 +197,12 @@ function connectSupabase() {
   if (SUPABASE_URL.includes("PASTE_") || SUPABASE_PUBLISHABLE_KEY.includes("PASTE_")) {
     throw new Error("Add your Supabase Project URL and publishable key in the code first.");
   }
-  if (!supabase) supabase = window.supabase.createClient(
-    SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY
-  );
+  if (!supabaseClient) {
+    supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+  }
 }
 
 function makeCode() {
@@ -334,7 +337,7 @@ async function startHost() {
     role = "host";
     sessionCode = makeCode();
     hostState = { questionIndex: -1, ended: false, players: {} };
-    channel = supabase.channel(topic(sessionCode), {
+    channel = supabaseClient.channel(topic(sessionCode), {
       config: { broadcast: { self: false } }
     });
 
