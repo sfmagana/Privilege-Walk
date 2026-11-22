@@ -409,7 +409,7 @@ async function joinAsStudent() {
     participantId = sessionStorage.getItem("privwalk-id") || makeId();
     sessionStorage.setItem("privwalk-id", participantId);
 
-    channel = supabase.channel(topic(sessionCode), {
+    channel = supabaseCLient.channel(topic(sessionCode), {
       config: { broadcast: { self: false } }
     });
 
