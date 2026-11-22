@@ -1,0 +1,487 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Virtual Privilege Walk</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root { font-family: Arial, sans-serif; color:#202938; background:#f3f5f8; }
+* { box-sizing:border-box; }
+body { margin:0; padding:18px; }
+main { max-width:1050px; margin:auto; }
+.panel { background:white; border-radius:14px; padding:22px; margin:14px 0;
+         box-shadow:0 2px 12px #0000000d; }
+h1 { margin:0 0 8px; font-size:27px; }
+h2 { margin-top:0; }
+p { line-height:1.5; }
+button, input { font:inherit; padding:12px 15px; border-radius:9px; }
+button { border:0; background:#2457a6; color:white; cursor:pointer; margin:5px 4px 5px 0; }
+button.secondary { background:#e8edf5; color:#243247; }
+button.danger { background:#a83232; }
+button:disabled { opacity:.4; cursor:not-allowed; }
+input { border:1px solid #cbd3df; width:100%; max-width:320px; }
+.small { color:#647084; font-size:14px; }
+.hidden { display:none !important; }
+.code { font-size:34px; letter-spacing:7px; font-weight:bold; color:#2457a6; }
+.question { font-size:22px; line-height:1.4; font-weight:600; }
+.pill { display:inline-block; background:#e8edf5; padding:5px 10px;
+        border-radius:20px; font-size:13px; margin:3px; }
+.track-wrap { overflow-x:auto; padding:12px 0; }
+.track { display:grid; grid-template-columns:repeat(21,minmax(35px,1fr));
+         gap:3px; min-width:770px; }
+.trackcol { min-height:100px; background:#f0f3f8; border-radius:6px;
+            text-align:center; padding:5px 1px; }
+.trackcol small { display:block; color:#657084; font-size:10px; }
+.avatar { display:inline-flex; align-items:center; justify-content:center;
+          width:25px; height:25px; margin:2px; border-radius:50%;
+          background:#dbe7fb; color:#173d75; font-size:11px; font-weight:bold; }
+.statrow { display:flex; flex-wrap:wrap; gap:8px; }
+.stat { background:#f0f3f8; padding:10px 14px; border-radius:8px; }
+#studentActions button { width:100%; margin:6px 0; padding:16px; }
+#studentActions .secondary { background:#e8edf5; color:#243247; }
+</style>
+</head>
+<body>
+<main>
+  <header class="panel">
+    <h1>Virtual Privilege Walk</h1>
+    <p class="small">A facilitated classroom activity. Use an anonymous participant number.
+    You may always choose not to move.</p>
+  </header>
+
+  <section id="home" class="panel">
+    <h2>Choose your role</h2>
+    <button id="hostMode">Teacher / facilitator</button>
+    <button id="studentMode" class="secondary">Student</button>
+    <p class="small">The teacher creates a session. Students join using the session code.</p>
+  </section>
+
+  <section id="hostSetup" class="panel hidden">
+    <h2>Facilitator setup</h2>
+    <p>Enter your Supabase project details in the code before using this app.</p>
+    <button id="createSession">Create classroom session</button>
+    <p id="hostError" class="small"></p>
+  </section>
+
+  <section id="studentSetup" class="panel hidden">
+    <h2>Join the activity</h2>
+    <p>Enter the joining code shown on the classroom screen.</p>
+    <input id="joinCode" maxlength="8" placeholder="8-character session code"
+           autocomplete="off">
+    <p>Choose your participant number (01–30). Do not use your name.</p>
+    <input id="playerNumber" type="number" min="1" max="30" placeholder="Participant number">
+    <p><button id="joinSession">Join session</button></p>
+    <p id="joinError" class="small"></p>
+  </section>
+
+  <section id="hostView" class="hidden">
+    <div class="panel">
+      <h2>Classroom session</h2>
+      <p class="small">Ask students to open the website and enter this code.</p>
+      <div id="sessionCode" class="code"></div>
+      <p id="shareLink" class="small"></p>
+      <div class="statrow">
+        <div class="stat">Joined: <strong id="playerCount">0</strong> / 30</div>
+        <div class="stat">Answered this statement: <strong id="answerCount">0</strong></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 id="hostQuestionTitle">Ready to begin</h2>
+      <p id="hostQuestion" class="question">Create the session and then start the first statement.</p>
+      <p id="hostDirection" class="small"></p>
+      <button id="previous" class="secondary">← Previous</button>
+      <button id="next">Next statement →</button>
+      <button id="end" class="danger">End activity</button>
+      <p class="small">The facilitator controls the pace. Moving backwards through the statement list does not undo previous movements.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Live classroom positions</h2>
+      <p class="small">Each circle represents one anonymous participant. Position 10 is the starting point.</p>
+      <div class="track-wrap"><div id="track" class="track"></div></div>
+      <p id="positionSummary" class="small"></p>
+    </div>
+
+    <div class="panel">
+      <h2>Debrief</h2>
+      <ul>
+        <li>What did you notice about the distribution of positions?</li>
+        <li>Which factors shaped people's opportunities or barriers?</li>
+        <li>What might this activity fail to capture about people's experiences?</li>
+        <li>How can institutions reduce structural barriers rather than expecting individuals to overcome them?</li>
+      </ul>
+      <button id="copySummary" class="secondary">Copy final position summary</button>
+    </div>
+  </section>
+
+  <section id="studentView" class="hidden">
+    <div class="panel">
+      <h2>You're in the activity</h2>
+      <p>Participant <strong id="myNumber"></strong></p>
+      <p id="studentStatus" class="small">Waiting for the facilitator to begin…</p>
+    </div>
+    <div class="panel">
+      <p class="small" id="studentProgress">Waiting for the first statement</p>
+      <p id="studentQuestion" class="question">Please wait for your facilitator.</p>
+      <p id="studentDirection" class="small"></p>
+      <div id="studentActions" class="hidden">
+        <button id="takeStep">This applies to me — take the step</button>
+        <button id="pass" class="secondary">It doesn't apply / I pass</button>
+      </div>
+      <p id="myPosition" class="small"></p>
+    </div>
+  </section>
+</main>
+
+<script>
+// 1. REPLACE THESE TWO VALUES WITH YOUR SUPABASE PROJECT DETAILS.
+const SUPABASE_URL = "https://lznnenzbsvictqcqrwdj.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_rj-bwwNyDo2nJOhg68-zfg_2OIBquCy";
+
+// Statements adapted from Laura Hilliger's Open Organization exercise.
+// Direction is the direction participants take if the statement applies.
+const QUESTIONS = [
+  ["If you are right-handed.", 1],
+  ["If English is your first language.", 1],
+  ["If one or both of your parents have a college degree.", 1],
+  ["If you can find Band-Aids in mainstream stores designed to match your skin tone.", 1],
+  ["If you rely, or have relied, primarily on public transportation.", -1],
+  ["If you have worked with people you felt were like yourself.", 1],
+  ["If you constantly feel unsafe walking alone at night.", -1],
+  ["If your household employs help as servants, gardeners, etc.", 1],
+  ["If you are able to move through the world without fear of sexual assault.", 1],
+  ["If you studied the culture of your ancestors in elementary school.", 1],
+  ["If you were ever made fun of or bullied for something you could not change or that was beyond your control.", -1],
+  ["If your family ever left your homeland or entered another country not of your own free will.", -1],
+  ["If you would never think twice about calling the police when trouble occurs.", 1],
+  ["If you have ever been able to play a significant role in a project or activity because of a talent you gained previously.", 1],
+  ["If you can show affection for your romantic partner in public without fear of ridicule or violence.", 1],
+  ["If you ever had to skip a meal or were hungry because there was not enough money to buy food.", -1],
+  ["If you feel respected for your academic performance.", 1],
+  ["If you have a physically visible disability.", -1],
+  ["If you have an invisible illness or disability.", -1],
+  ["If you were ever discouraged from an activity because of race, class, ethnicity, gender, disability, or sexual orientation.", -1],
+  ["If you ever tried to change your appearance, mannerisms, or behavior to fit in more.", -1],
+  ["If you have ever been profiled by someone else using stereotypes.", -1],
+  ["If you feel good about how your identities are portrayed by the media.", 1],
+  ["If you were ever accepted for something you applied to because of your association with a friend or family member.", 1],
+  ["If you have health insurance.", 1],
+  ["If you have ever been spoken over because you could not articulate your thoughts fast enough.", -1],
+  ["If someone has ever spoken for you when you did not want them to do so.", -1],
+  ["If there was ever substance abuse in your household.", -1],
+  ["If you come from a single-parent household.", -1],
+  ["If you live in an area with crime and drug activity.", -1],
+  ["If someone in your household suffered or suffers from mental illness.", -1],
+  ["If you have been a victim of sexual harassment.", -1],
+  ["If you were ever uncomfortable about a joke related to your race, religion, ethnicity, gender, disability, or sexual orientation but felt unsafe to confront the situation.", -1],
+  ["If you are never asked to speak on behalf of a group of people who share an identity with you.", 1],
+  ["If you can make mistakes and not have people attribute your behavior to flaws in your racial or gender group.", 1],
+  ["If you went to college.", 1],
+  ["If you have more than fifty books in your household.", 1],
+  ["If your parents told you that you can be anything you want to be.", 1]
+];
+
+let supabase, channel, role, sessionCode, participantId, participantNumber;
+let hostState = null;
+let studentState = null;
+
+const $ = id => document.getElementById(id);
+function show(id) { $(id).classList.remove("hidden"); }
+function hide(id) { $(id).classList.add("hidden"); }
+function error(id, message) { $(id).textContent = message; }
+
+function connectSupabase() {
+  if (SUPABASE_URL.includes("PASTE_") || SUPABASE_PUBLISHABLE_KEY.includes("PASTE_")) {
+    throw new Error("Add your Supabase Project URL and publishable key in the code first.");
+  }
+  if (!supabase) supabase = window.supabase.createClient(
+    SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY
+  );
+}
+
+function makeCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let result = "";
+  for (let i = 0; i < 8; i++) result += chars[Math.floor(Math.random() * chars.length)];
+  return result;
+}
+
+function makeId() {
+  return (window.crypto && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : "p-" + Math.random().toString(36).slice(2) + Date.now();
+}
+
+function topic(code) { return "privwalk-" + code; }
+
+function broadcast(event, payload) {
+  return channel.send({ type: "broadcast", event, payload });
+}
+
+function snapshot() {
+  return {
+    questionIndex: hostState.questionIndex,
+    ended: hostState.ended,
+    players: Object.values(hostState.players)
+  };
+}
+
+async function sendSnapshot() {
+  await broadcast("state", snapshot());
+  renderHost();
+}
+
+function renderHost() {
+  const players = Object.values(hostState.players);
+  $("playerCount").textContent = players.length;
+  const qIndex = hostState.questionIndex;
+  const q = QUESTIONS[qIndex];
+
+  if (hostState.ended) {
+    $("hostQuestionTitle").textContent = "Activity ended";
+    $("hostQuestion").textContent = "The facilitator has ended the activity.";
+    $("hostDirection").textContent = "";
+  } else if (q) {
+    $("hostQuestionTitle").textContent = `Statement ${qIndex + 1} of ${QUESTIONS.length}`;
+    $("hostQuestion").textContent = q[0];
+    $("hostDirection").textContent = q[1] === 1
+      ? "Direction: FORWARD if this statement applies."
+      : "Direction: BACKWARD if this statement applies.";
+  } else {
+    $("hostQuestionTitle").textContent = "Ready to begin";
+    $("hostQuestion").textContent = "Press Next statement when everyone is ready.";
+    $("hostDirection").textContent = "";
+  }
+
+  const answered = qIndex < 0 ? 0 :
+    players.filter(p => p.answers && p.answers[qIndex] !== undefined).length;
+  $("answerCount").textContent = answered;
+
+  $("previous").disabled = qIndex <= 0 || hostState.ended;
+  $("next").disabled = hostState.ended || qIndex >= QUESTIONS.length - 1;
+
+  const track = $("track");
+  track.replaceChildren();
+  for (let pos = 0; pos <= 20; pos++) {
+    const col = document.createElement("div");
+    col.className = "trackcol";
+    const label = document.createElement("small");
+    label.textContent = pos;
+    col.appendChild(label);
+    players.filter(p => p.position === pos)
+      .sort((a,b) => a.number - b.number)
+      .forEach(p => {
+        const avatar = document.createElement("span");
+        avatar.className = "avatar";
+        avatar.textContent = String(p.number).padStart(2, "0");
+        avatar.title = "Participant " + p.number;
+        col.appendChild(avatar);
+      });
+    track.appendChild(col);
+  }
+
+  const counts = Array.from({length:21}, (_,pos) =>
+    players.filter(p => p.position === pos).length
+  );
+  $("positionSummary").textContent = players.length
+    ? "Left to right: " + counts.map((n,i) => `${i}:${n}`).join("  |  ")
+    : "No participants have joined yet.";
+}
+
+function renderStudent() {
+  if (!studentState) return;
+  if (studentState.ended) {
+    $("studentStatus").textContent = "The activity has ended. Thank you for participating.";
+    $("studentQuestion").textContent = "Please wait for the group discussion.";
+    hide("studentActions");
+    return;
+  }
+
+  const i = studentState.questionIndex;
+  const q = QUESTIONS[i];
+  if (!q) {
+    $("studentProgress").textContent = "Waiting for the facilitator";
+    $("studentQuestion").textContent = "Please wait for the first statement.";
+    $("studentDirection").textContent = "";
+    hide("studentActions");
+    return;
+  }
+
+  const me = (studentState.players || []).find(p => p.id === participantId);
+  $("studentProgress").textContent = `Statement ${i + 1} of ${QUESTIONS.length}`;
+  $("studentQuestion").textContent = q[0];
+  $("studentDirection").textContent = q[1] === 1
+    ? "If this applies to you, your step is FORWARD."
+    : "If this applies to you, your step is BACKWARD.";
+
+  if (me) {
+    $("myPosition").textContent = "Your current position: " + me.position;
+    const alreadyAnswered = me.answers && me.answers[i] !== undefined;
+    $("studentStatus").textContent = alreadyAnswered
+      ? "Your response has been recorded. Wait for the next statement."
+      : "Choose privately. You do not need to explain your choice.";
+    if (alreadyAnswered) hide("studentActions");
+    else show("studentActions");
+  }
+}
+
+async function startHost() {
+  try {
+    connectSupabase();
+    role = "host";
+    sessionCode = makeCode();
+    hostState = { questionIndex: -1, ended: false, players: {} };
+    channel = supabase.channel(topic(sessionCode), {
+      config: { broadcast: { self: false } }
+    });
+
+    channel.on("broadcast", { event: "join" }, async ({payload}) => {
+      const {id, number} = payload || {};
+      if (!id || !Number.isInteger(number) || number < 1 || number > 30) return;
+
+      const existing = hostState.players[id];
+      const numberTaken = Object.values(hostState.players)
+        .some(p => p.number === number && p.id !== id);
+
+      if (!existing && (numberTaken || Object.keys(hostState.players).length >= 30)) {
+        await broadcast("reject", {id, reason:"That number is already taken or the session is full."});
+        return;
+      }
+
+      if (!existing) {
+        hostState.players[id] = {
+          id, number, position:10, answers:{}
+        };
+      }
+      await sendSnapshot();
+    });
+
+    channel.on("broadcast", { event: "move" }, async ({payload}) => {
+      const p = payload || {};
+      const player = hostState.players[p.id];
+      const q = QUESTIONS[hostState.questionIndex];
+      if (!player || !q || hostState.ended) return;
+      if (p.questionIndex !== hostState.questionIndex) return;
+      if (player.answers[hostState.questionIndex] !== undefined) return;
+      if (p.action !== "step" && p.action !== "pass") return;
+
+      const movement = p.action === "step" ? q[1] : 0;
+      player.position = Math.max(0, Math.min(20, player.position + movement));
+      player.answers[hostState.questionIndex] = p.action;
+      await sendSnapshot();
+    });
+
+    channel.subscribe(async status => {
+      if (status === "SUBSCRIBED") {
+        $("sessionCode").textContent = sessionCode;
+        $("shareLink").textContent = "Student website: " + location.href.split("#")[0];
+        hide("home"); hide("hostSetup"); show("hostView");
+        renderHost();
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        error("hostError", "Could not connect. Check your Supabase details and internet connection.");
+      }
+    });
+  } catch (e) {
+    error("hostError", e.message);
+  }
+}
+
+async function joinAsStudent() {
+  try {
+    connectSupabase();
+    role = "student";
+    sessionCode = $("joinCode").value.trim().toUpperCase();
+    participantNumber = Number($("playerNumber").value);
+
+    if (!/^[A-HJ-NP-Z2-9]{8}$/.test(sessionCode)) {
+      throw new Error("Enter the 8-character code shown by your teacher.");
+    }
+    if (!Number.isInteger(participantNumber) || participantNumber < 1 || participantNumber > 30) {
+      throw new Error("Choose a participant number from 1 to 30.");
+    }
+
+    participantId = sessionStorage.getItem("privwalk-id") || makeId();
+    sessionStorage.setItem("privwalk-id", participantId);
+
+    channel = supabase.channel(topic(sessionCode), {
+      config: { broadcast: { self: false } }
+    });
+
+    channel.on("broadcast", { event: "state" }, ({payload}) => {
+      studentState = payload;
+      renderStudent();
+    });
+
+    channel.on("broadcast", { event: "reject" }, ({payload}) => {
+      if (payload && payload.id === participantId) {
+        error("joinError", payload.reason || "Unable to join.");
+      }
+    });
+
+    channel.subscribe(async status => {
+      if (status === "SUBSCRIBED") {
+        $("myNumber").textContent = String(participantNumber).padStart(2,"0");
+        hide("home"); hide("studentSetup"); show("studentView");
+        await broadcast("join", {id:participantId, number:participantNumber});
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        error("joinError", "Could not connect. Check the code and your internet connection.");
+      }
+    });
+  } catch (e) {
+    error("joinError", e.message);
+  }
+}
+
+$("hostMode").onclick = () => { hide("home"); show("hostSetup"); };
+$("studentMode").onclick = () => { hide("home"); show("studentSetup"); };
+$("createSession").onclick = startHost;
+$("joinSession").onclick = joinAsStudent;
+
+$("next").onclick = async () => {
+  if (!hostState || hostState.ended) return;
+  hostState.questionIndex = Math.min(QUESTIONS.length - 1, hostState.questionIndex + 1);
+  await sendSnapshot();
+};
+$("previous").onclick = async () => {
+  if (!hostState || hostState.ended) return;
+  hostState.questionIndex = Math.max(0, hostState.questionIndex - 1);
+  await sendSnapshot();
+};
+$("end").onclick = async () => {
+  if (!hostState || hostState.ended) return;
+  if (!confirm("End the activity for everyone?")) return;
+  hostState.ended = true;
+  await sendSnapshot();
+};
+
+async function submitChoice(action) {
+  if (!channel || !studentState || studentState.ended) return;
+  const i = studentState.questionIndex;
+  if (i < 0 || i >= QUESTIONS.length) return;
+  const me = (studentState.players || []).find(p => p.id === participantId);
+  if (!me || (me.answers && me.answers[i] !== undefined)) return;
+
+  $("studentStatus").textContent = "Sending your response…";
+  hide("studentActions");
+  await broadcast("move", {id:participantId, questionIndex:i, action});
+}
+$("takeStep").onclick = () => submitChoice("step");
+$("pass").onclick = () => submitChoice("pass");
+
+$("copySummary").onclick = async () => {
+  if (!hostState) return;
+  const players = Object.values(hostState.players);
+  const counts = Array.from({length:21}, (_,pos) =>
+    players.filter(p => p.position === pos).length
+  );
+  const summary = `Privilege Walk final distribution\nParticipants: ${players.length}\n` +
+    counts.map((n,i) => `Position ${i}: ${n}`).join("\n");
+  await navigator.clipboard.writeText(summary);
+  $("copySummary").textContent = "Summary copied!";
+};
+</script>
+</body>
+</html>
