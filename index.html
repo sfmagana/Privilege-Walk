@@ -1,16 +1,30 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mythical Privilege Walk</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Steps Toward Equality | Privilege Walk</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <!-- QR displayed as an image; no QR JavaScript library required. -->
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#193529;background:#e6f2e6}*{box-sizing:border-box}body{margin:0}header{background:#173c30;color:white;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}header h1{font-size:clamp(18px,3vw,26px);margin:0}.wrap{max-width:1500px;margin:auto;padding:12px}.card{background:#fff;border-radius:17px;padding:16px;margin-bottom:12px;box-shadow:0 3px 12px #173c3015}.hidden{display:none!important}button,input{font:inherit;border-radius:10px;padding:12px}button{background:#276b53;color:white;border:0;cursor:pointer;font-weight:650}button:disabled{opacity:.45;cursor:default}.alt{background:#e3eee7;color:#173c30}.warn{background:#a63745}input{border:1px solid #9cb5a5;width:min(100%,340px)}.muted{color:#52695c;font-size:14px}.status{font-weight:650;color:#286a4f}.error{color:#aa2735}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1;min-width:130px}.code{font-size:32px;font-weight:800;letter-spacing:5px}.join-layout{display:flex;gap:24px;align-items:center;flex-wrap:wrap}#qr{width:184px;height:184px;border:8px solid white;background:white}#qr img,#qr canvas{width:100%!important;height:100%!important}.question{font-size:clamp(18px,2.5vw,26px);font-weight:750;margin:8px 0}.field{position:relative;overflow:auto;width:100%;height:clamp(380px,68vh,850px);border:7px solid #f9fff5;border-radius:22px;background:repeating-linear-gradient(90deg,#63a953 0 120px,#71b65c 120px 240px);box-shadow:inset 0 0 0 3px #397c3a,0 5px 20px #17452b25}.field-grid{position:relative;display:grid;grid-template-columns:repeat(21,minmax(74px,1fr));min-width:1554px;min-height:100%;padding:6px}.lane{border-right:1px solid #ffffff80;text-align:center;min-height:100%;position:relative}.lane.start{background:#f5e9a633}.lane>span{position:sticky;top:0;display:block;color:#fff;text-shadow:0 1px 3px #204a20;font-weight:750;background:#18451d30;z-index:2}.creatures{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 2px 12px}.creature{max-width:72px;display:flex;align-items:center;flex-direction:column;gap:1px;background:#ffffffe8;border:2px solid #ffffff;border-radius:14px;padding:5px 3px;box-shadow:0 2px 5px #0002}.creature.me{border:3px solid #ffd34d;background:#fff3ba}.emoji{font-size:27px;line-height:1.1}.nickname{font-size:10px;font-weight:750;max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.field-caption{font-size:13px;margin:5px 0;color:#41654b}.tiny{font-size:12px}#studentControls{position:sticky;bottom:0;z-index:3}.student-layout{display:flex;flex-direction:column;min-height:100vh}.student-layout .field{height:clamp(350px,67vh,900px)}.count{font-weight:700}#qrFallback{word-break:break-all}.scrollhint{color:#446c4c;font-size:12px}.toprow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}#hostField,#studentField{scrollbar-width:thin}a{color:#1d6b52}label{display:block;margin:10px 0 4px;font-weight:650}
+/* Equality-inspired design: interconnected paths, diverse starting points, shared dignity. */
+:root{color:#20314c;background:#edf2fb}
+body{background:radial-gradient(circle at 10% 5%,#e3eafa 0,transparent 35%),linear-gradient(160deg,#f5f7ff,#eaf2f0)}
+header{background:linear-gradient(110deg,#273d70,#3d6782);border-bottom:5px solid #e5c777}
+.card{box-shadow:0 4px 20px #203b6415;border:1px solid #dfe7f2}
+button{background:#355b9a}button:hover:not(:disabled){filter:brightness(1.07)}
+.alt{background:#e6edfa;color:#294472}.muted{color:#586781}.status{color:#2f6681}
+.code{color:#294b84}.field{border-color:#f9fbff;box-shadow:inset 0 0 0 3px #3c7b51,0 8px 22px #233b4b25}
+.field-caption,.scrollhint{color:#486179}a{color:#2e5492}
+#home{padding:30px;max-width:850px;margin:35px auto;background:linear-gradient(130deg,#fff,#f0f4ff)}
+#home h2{color:#293f75;font-size:clamp(23px,3vw,34px)}
+#home:before{content:'EQUALITY • EQUITY • INCLUSION';display:block;letter-spacing:.18em;font-weight:800;color:#55749d;font-size:12px;margin-bottom:12px}
+#teacherView .card h2{color:#293f75}
+.creature.me{border-color:#e2b84e;background:#fff4c8}
 </style></head><body>
-<header><h1>🧚 Mythical Privilege Walk</h1><span id="connection" class="tiny">Ready</span></header>
+<header><h1>⚖️ Steps Toward Equality</h1><span id="connection" class="tiny">Ready</span></header>
 <main class="wrap">
-<section id="home" class="card"><h2>Welcome to the field</h2><p>Join with a nickname and receive a random mythical creature. No account needed.</p><div class="actions"><button id="teacherButton">Facilitator</button><button id="studentButton" class="alt">Student</button></div></section>
+<section id="home" class="card"><h2>Different starting points. Shared humanity.</h2><p>Explore how opportunities and barriers shape our paths. Join with a nickname and receive a mythical companion. You can always pass without explaining why.</p><div class="actions"><button id="teacherButton">Facilitator</button><button id="studentButton" class="alt">Student</button></div></section>
 <section id="teacherSetup" class="card hidden"><h2>Facilitator</h2><p>Create a new session for up to 35 students.</p><button id="createButton">Create session</button><p id="teacherError" class="error"></p></section>
 <section id="studentSetup" class="card hidden"><h2>Join the game</h2><label for="codeInput">Session code</label><input id="codeInput" maxlength="8" autocomplete="off" placeholder="8-character code"><label for="nameInput">Nickname (up to 16 characters)</label><input id="nameInput" maxlength="16" autocomplete="off" placeholder="e.g. Stardust"><p class="muted">Use a nickname, not your real name. Names are visible to other participants.</p><button id="joinButton">Join field</button><p id="joinError" class="error"></p></section>
-<section id="teacherView" class="hidden"><div class="card join-layout"><div><h2>Join this session</h2><div id="codeLabel" class="code"></div><p class="muted">Scan the QR code or enter the code at:</p><p id="linkLabel" class="tiny"></p><div class="toprow"><span class="count">Participants: <span id="hostCount">0</span>/35</span><span>Responses: <b id="responseCount">0</b></span></div></div><div><div id="qr"></div><div id="qrFallback" class="tiny"></div></div></div><div class="card"><div class="toprow"><strong id="hostProgress">Waiting to begin</strong><span id="hostHint" class="muted"></span></div><p id="hostQuestion" class="question">Students can join now. Press Next to begin.</p><div class="actions"><button id="prevButton" class="alt">Previous statement</button><button id="nextButton">Next statement</button><button id="endButton" class="warn">End game</button></div><p class="muted">Previous changes the displayed statement but does not reverse movements. Leave this tab open throughout the activity.</p></div><div class="card"><div class="toprow"><h2>Live mythical field</h2><span class="scrollhint">↔ Scroll sideways to see all positions</span></div><div class="field" id="hostField"><div class="field-grid" id="hostGrid"></div></div><p class="field-caption">Position 10 is the starting line. Avatars stack vertically when students share a position.</p></div><div class="card"><h3>Discussion prompts</h3><p>What structural advantages and barriers did you notice? What cannot be represented by a single position? What could institutions do to make opportunities more equitable?</p></div></section>
-<section id="studentView" class="student-layout hidden"><div class="card"><div class="toprow"><strong id="studentProgress">Waiting for facilitator</strong><span class="count"><span id="studentCount">0</span>/35 joined</span></div><p id="studentQuestion" class="question">Please wait for the first statement.</p><p id="studentHint" class="muted"></p><p id="studentStatus" class="status"></p></div><div class="card" style="padding:9px"><div class="toprow"><strong id="identityLabel"></strong><span class="scrollhint">↔ Scroll to see everyone</span></div><div class="field" id="studentField"><div class="field-grid" id="studentGrid"></div></div></div><div id="studentControls" class="card hidden"><div class="actions"><button id="stepButton">Take the step</button><button id="passButton" class="alt">Stay / pass</button></div><p class="muted">You can always pass without explaining why.</p></div></section>
+<section id="teacherView" class="hidden"><div class="card join-layout"><div><h2>Join this session</h2><div id="codeLabel" class="code"></div><p class="muted">Scan the QR code or enter the code at:</p><p id="linkLabel" class="tiny"></p><div class="toprow"><span class="count">Participants: <span id="hostCount">0</span>/35</span><span>Responses: <b id="responseCount">0</b></span></div></div><div><div id="qr"></div><div id="qrFallback" class="tiny"></div></div></div><div class="card"><div class="toprow"><strong id="hostProgress">Waiting to begin</strong><span id="hostHint" class="muted"></span></div><p id="hostQuestion" class="question">Students can join now. Press Next to begin.</p><div class="actions"><button id="prevButton" class="alt">Previous statement</button><button id="nextButton">Next statement</button><button id="endButton" class="warn">End game</button></div><p class="muted">Previous changes the displayed statement but does not reverse movements. Leave this tab open throughout the activity.</p></div><div class="card"><div class="toprow"><h2>Our paths · Live equality field</h2><span class="scrollhint">↔ Scroll sideways to see all positions</span></div><div class="field" id="hostField"><div class="field-grid" id="hostGrid"></div></div><p class="field-caption">Position 10 is the starting line. Avatars stack vertically when students share a position.</p></div><div class="card"><h3>Reflecting on equality and opportunity</h3><p>What patterns of advantage and disadvantage do you notice? Why do equal rules not always produce equal opportunities? What experiences cannot be represented by a single position? What could institutions change to create more equitable outcomes?</p></div></section>
+<section id="studentView" class="student-layout hidden"><div class="card"><div class="toprow"><strong id="studentProgress">Waiting for facilitator</strong><span class="count"><span id="studentCount">0</span>/35 joined</span></div><p id="studentQuestion" class="question">Please wait for the first statement.</p><p id="studentHint" class="muted"></p><p id="studentStatus" class="status"></p></div><div class="card" style="padding:9px"><div class="toprow"><strong id="identityLabel"></strong><span class="scrollhint">↔ Scroll to see everyone</span></div><div class="field" id="studentField"><div class="field-grid" id="studentGrid"></div></div></div><div id="studentControls" class="card hidden"><div class="actions"><button id="stepButton">Take the step</button><button id="passButton" class="alt">Stay / pass</button></div><p class="muted">Every experience is personal. You may always stay or pass without explanation.</p></div></section>
 </main><script>
 // ==================== EDIT ONLY THESE TWO LINES ====================
 const SUPABASE_URL = "https://lznnenzbsvictqcqrwdj.supabase.co"; // 🟨 Replace with https://xxxxx.supabase.co
@@ -20,21 +34,32 @@ const MAX_PLAYERS=35, MIN_POSITION=0, MAX_POSITION=20, START_POSITION=10;
 const CREATURES=['🐉','🦄','🧚','🧜','🧞','🧝','🧙','🦋','🐲','🦕','🦊','🦉','🦇','🐺','🦁','🐈‍⬛','🦌','🐬','🦭','🦚','🦢','🐸','🐙','🦎','🐦‍🔥','🪼'];
 // Replace or adapt statements as needed for your class. +1=forward; -1=backward.
 const QUESTIONS=[
-['If you can find school materials that represent your culture or background.',1],
-['If you have reliable internet access for studying.',1],
-['If you have ever been excluded because of your identity or background.',-1],
-['If you have a quiet place where you can study.',1],
-['If you have experienced barriers because of the language you speak.',-1],
-['If you can access healthcare when you need it.',1],
-['If money has prevented you from joining an educational activity.',-1],
-['If you see people like yourself represented positively in the media.',1],
-['If you have felt unsafe travelling alone.',-1],
-['If someone has helped you understand unfamiliar institutional rules.',1],
-['If you have experienced unfair treatment because of stereotypes.',-1],
-['If you can easily access safe public spaces near your home.',1],
-['If you have ever felt that your voice was ignored in a group decision.',-1],
-['If you have access to people who can advise you about future opportunities.',1],
-['If transport costs have limited where you can go.',-1]
+  ["If one or both of your parents graduated from university",1],
+  ["If you have been divorced or impacted by divorce",-1],
+  ["If there have been times in your life when you needed to skip a meal or were hungry because there was not enough money to buy food",-1],
+  ["If you have visible or invisible disabilities, such as difficulty hearing",-1],
+  ["If your household employs helpers, such as gardeners, cooks, nannies, etc.",1],
+  ["If you have access to transportation",1],
+  ["If you have felt included among your peers at work",1],
+  ["If you constantly feel unsafe walking alone at night",-1],
+  ["If you are able to move through life without fear of sexual assault",1],
+  ["If your family ever fled its homeland",-1],
+  ["If you studied your ancestors and their history in elementary school",1],
+  ["If your family had health insurance",1],
+  ["If you have been bullied or made fun of based on something you cannot change (such as your gender, ethnicity, physical features, age or sexual orientation)",-1],
+  ["If your work and school holidays coincide with religious or cultural holidays that you celebrate",1],
+  ["If you were ever offered a job because of your association with a friend or family member",1],
+  ["If you were ever stopped and questioned by the police because they felt you were suspicious",-1],
+  ["If you or your family ever inherited money or property",1],
+  ["If you came from a supportive family environment",1],
+  ["If one of your parents was ever laid off, or unemployed not by choice",-1],
+  ["If you were ever uncomfortable about a joke or statement you overheard related to your race, ethnicity, gender, appearance or sexual orientation",-1],
+  ["If your ancestors were forced to move to another country",-1],
+  ["If you would never think twice about calling the police when trouble occurs",1],
+  ["If you took out loans for your education",-1],
+  ["If you and your romantic partner can appear as a couple in public without fear of ridicule or violence",1],
+  ["If there was ever substance abuse in your household",-1],
+  ["If your parents told you that you can be anything you want to be",1]
 ];
 const $=id=>document.getElementById(id), show=id=>$(id).classList.remove('hidden'), hide=id=>$(id).classList.add('hidden');
 let supabaseClient=null, channel=null, role='',sessionCode='',playerId='',myName='',hostState=null,studentState=null,joinConfirmed=false,joinTimeout=null;
